@@ -15,9 +15,14 @@ fi
 
 : ${tmp_dir:=${TMPPREFIX:-/tmp/zsh}-fzf-tab-$USER}
 
+zstyle -a ":fzf-tab:*" switch-group _switch_group_binds
+local _switch_group_header="switch-group:${_switch_group_binds[1]}${_switch_group_binds[2]}"
+
 # fallback to fzf if it is not running in tmux
 if (( ! $+TMUX_PANE )); then
-  fzf $@
+  # here we show switch-group keys via --header to `fzf`,
+  # but later on, instead, it's passed via -T to `tmux popup`.
+  fzf --header="${_switch_group_header}" $@
   return
 fi
 
@@ -88,8 +93,10 @@ popup_width=$(( min(max(comp_length + 5, popup_min_size[1]), window_width) ))
 popup_x=$(( cursor_x + popup_width > window_width ? window_width - popup_width : cursor_x ))
 
 echo -E "env SHELL=$ZSH_NAME $commands[fzf] ${(qq)fzf_opts[@]} < $tmp_dir/completions.$$ > $tmp_dir/result-$$" > $tmp_dir/fzf-$$
+local _popup_title="${_ftb_curcontext%:} ${_switch_group_header}"
 {
   tmux popup -x $popup_x -y $popup_y \
+       -T "$_popup_title" \
        -w $popup_width -h $popup_height \
        -d $PWD -E ". $tmp_dir/fzf-$$" || ret=$?
   echo -E "$(<$tmp_dir/result-$$)"

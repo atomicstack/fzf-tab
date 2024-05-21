@@ -96,7 +96,7 @@ echo -E "env SHELL=$ZSH_NAME $commands[fzf] ${(qq)fzf_opts[@]} < $tmp_dir/comple
 local _popup_title="${_ftb_curcontext%:} ${_switch_group_header}"
 {
   tmux popup -x $popup_x -y $popup_y \
-       -T "$_popup_title" \
+       -T "#[fg=color255]$_popup_title#[default]" \
        -w $popup_width -h $popup_height \
        -d $PWD -E ". $tmp_dir/fzf-$$" || ret=$?
   echo -E "$(<$tmp_dir/result-$$)"
